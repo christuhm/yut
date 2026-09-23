@@ -100,6 +100,19 @@ aside{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .save .btn.del{color:#B8402E}
 .save.cur{border-color:var(--ink);border-width:2px}
 .actbar .btn.yut{font-weight:700;font-size:16px;padding:8px 14px;border-color:rgba(255,255,255,.6)}
+.rank{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.rank .rt{font-size:13px;color:var(--ink2);font-weight:700;letter-spacing:.04em;margin-bottom:8px}
+.rrow{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)}
+.rrow:first-of-type{border-top:0}
+.rrow .rn{font-weight:700;color:var(--ink2);font-size:14px}
+.rrow .rname{font-family:"Gowun Batang",serif;font-weight:700;font-size:20px;color:var(--tc)}
+.rrow .rdone{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.rrow .rdone small{font-size:12px;color:var(--ink2);font-weight:500;margin-left:2px}
+.rrow .rbar{grid-column:1/-1;height:6px;background:var(--paper2);border-radius:3px;overflow:hidden;margin-top:6px}
+.rrow .rbar i{display:block;height:100%;background:var(--tc);border-radius:3px}
+.rrow.r1 .rn{color:var(--tc);font-size:16px}
+.rrow.r1 .rname{font-size:26px}
+.rrow.r1 .rdone{font-size:36px}
 .log{background:var(--paper2);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--ink2);display:flex;flex-direction:column;gap:3px}
 .log .lt{font-weight:700;color:var(--ink);margin-bottom:2px}
 
@@ -348,6 +361,13 @@ function drawSide(){
   side.appendChild(ab);
 
   const per=S.pieces.length/S.teams.length;
+  // 순위판
+  const rows=S.teams.map((t,ti)=>({t,ti,done:piecesAt(ti,"done").length,on:per-piecesAt(ti,"wait").length-piecesAt(ti,"done").length}));
+  rows.sort((a,b)=>b.done-a.done||b.on-a.on);
+  let rank=0; rows.forEach((r,i)=>{ r.rank=(i>0&&r.done===rows[i-1].done)?rows[i-1].rank:i+1; });
+  const rk=document.createElement("div"); rk.className="rank";
+  rk.innerHTML=`<div class="rt">현재 순위</div>`+rows.map(r=>`<div class="rrow r${r.rank}" style="--tc:${r.t.color}"><span class="rn">${r.rank}등</span><span class="rname">${esc(r.t.name)}</span><span class="rdone">${r.done}<small>/${per} 완주</small></span><span class="rbar"><i style="width:${per?Math.round(r.done/per*100):0}%"></i></span></div>`).join("");
+  side.appendChild(rk);
   S.teams.forEach((t,ti)=>{
     const wait=piecesAt(ti,"wait").length, done=piecesAt(ti,"done").length, on=per-wait-done;
     const d=document.createElement("div"); d.className="team"+(done===per?" winner":""); d.style.setProperty("--tc",t.color);
